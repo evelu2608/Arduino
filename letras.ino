@@ -53,7 +53,7 @@ void Display_X();
 void Display_Y();
 void Display_Z();
 
-
+String mensaje = "Zeus";  // El mensaje que quieres mostrar ¡IMPORTANTE!
 unsigned long previousMillis = 0;
 const long interval = 1000;
 int currentLetterIndex = 0;
@@ -97,7 +97,6 @@ void (*letters[])()={
   Display_L,
   Display_M,
   Display_N,
-  Display_N2,
   Display_O,
   Display_P,
   Display_Q,
@@ -112,24 +111,43 @@ void (*letters[])()={
   Display_Z
 };
 
+bool mensajeMostrado = false;
+
 void loop() {
+  if (mensajeMostrado) {
+    Turn_them_all_off();  // Apaga la matriz al terminar
+    return;
+  }
+
   unsigned long currentMillis = millis();
 
-  // Mientras no haya pasado el intervalo, sigue mostrando la letra actual
-  if (currentMillis - previousMillis < interval) {
-    letters[currentLetterIndex](); // Mostrar letra actual una fila a la vez
-  } else {
-    // Reiniciar el tiempo y pasar a la siguiente letra
+  if (currentMillis - previousMillis >= 5000) {  // Espera 5 segundos por letra
     previousMillis = currentMillis;
-    currentLetterIndex++;
 
-    if (currentLetterIndex >= sizeof(letters) / sizeof(letters[0])) {
-      currentLetterIndex = 0; // Vuelve al inicio del abecedario
+    if (currentLetterIndex >= mensaje.length()) {
+      mensajeMostrado = true;  // Ya se mostró todo el mensaje
+      Turn_them_all_off();     // Apagar después de mostrar todo
+      return;
+    }
+
+    char letra = toupper(mensaje[currentLetterIndex]);
+    int index = letra - 'A';
+
+    if (index >= 0 && index < sizeof(letters) / sizeof(letters[0])) {
+      CTR_R = 1;
+      letters[index]();
+    }
+
+    currentLetterIndex++;
+  } else if (currentLetterIndex < mensaje.length()) {
+    char letra = toupper(mensaje[currentLetterIndex]);
+    int index = letra - 'A';
+
+    if (index >= 0 && index < sizeof(letters) / sizeof(letters[0])) {
+      letters[index]();  // Mantener visible la letra actual
     }
   }
 }
-
-
 
 void Turn_all_green() {
   // Set all row pins to HIGH (anodes)
